@@ -15,6 +15,7 @@ const char* deviceId = "deviceId";
 const char* wifiSsid = "ssid";
 const char* wifiPassword = "password";
 const char* serverAddress = "http://address:port/";
+const unsigned long delayTime = 60000; // in milliseconds;
 
 HTTPClient http;
 Adafruit_BME280 bme; // I2C connection, SLC -> D1, SDA -> D2
@@ -33,9 +34,19 @@ void setup() {
     Serial.println("Could not find a valid BME280 sensor, check wiring!");
     while (1);
   }
+
+  Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
+  Serial.println("filter off");
+  bme.setSampling(Adafruit_BME280::MODE_FORCED,
+                  Adafruit_BME280::SAMPLING_X1, // temperature
+                  Adafruit_BME280::SAMPLING_X1, // pressure
+                  Adafruit_BME280::SAMPLING_X1, // humidity
+                  Adafruit_BME280::FILTER_OFF);
 }
 
 void loop() {
+  
+  bme.takeForcedMeasurement();
 
   if (WiFi.status() == WL_CONNECTED) {
     char* request = prepareRequest();
@@ -44,7 +55,7 @@ void loop() {
     Serial.println("WiFi connection error");
   }
 
-  delay(5000);
+  delay(delayTime);
 }
 
 void sendRequest(char* request) {
